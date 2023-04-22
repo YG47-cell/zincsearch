@@ -28,6 +28,25 @@ import (
 	"github.com/zinclabs/zincsearch/pkg/zutils"
 )
 
+type Comparable interface {
+	int | float64 | int64
+}
+
+func min[T Comparable](a, b T) T {
+	if a < b {
+		return a
+	} else {
+		return b
+	}
+}
+func max[T Comparable](a, b T) T {
+	if a > b {
+		return a
+	} else {
+		return b
+	}
+}
+
 type AutoDateHistogramAggregation struct {
 	src             search.FieldSource
 	size            int
@@ -190,15 +209,20 @@ func (a *AutoDateHistogramCalculator) Merge(other search.Calculator) {
 				}
 				key := keyTime.UnixNano()
 				a.bucketsMap[key] = other.bucketsList[i]
-				if a.minValue > key {
-					a.minValue = key
-				}
-				if a.maxValue < key {
-					a.maxValue = key
-				}
-				if a.currentInterval < other.currentInterval {
-					a.currentInterval = other.currentInterval
-				}
+				a.minValue = max(key, a.minValue)
+
+				// if a.minValue > key {
+				// 	a.minValue = key
+				// }
+
+				a.maxValue = min(key, a.maxValue)
+				// if a.maxValue < key {
+				// 	a.maxValue = key
+				// }
+				a.currentInterval = min(a.currentInterval, other.currentInterval)
+				// if a.currentInterval < other.currentInterval {
+				// 	a.currentInterval = other.currentInterval
+				// }
 			}
 		}
 		// now re-invoke finish, this should trim to correct size again
@@ -260,7 +284,7 @@ func (a *AutoDateHistogramCalculator) Finish() {
 			}
 		}
 	}
-
+	//clear a.bucketsList
 	a.bucketsList = a.bucketsList[:0]
 	for _, bucket := range a.bucketsMap {
 		a.bucketsList = append(a.bucketsList, bucket)

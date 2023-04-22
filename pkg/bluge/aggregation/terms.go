@@ -254,10 +254,11 @@ func (a *TermsCalculator) Finish() {
 		a.sortFunc(a)
 	}
 
-	trimTopN := a.size
-	if trimTopN > len(a.bucketsList) {
-		trimTopN = len(a.bucketsList)
-	}
+	// trimTopN := a.size
+	trimTopN := min(a.size, len(a.bucketsList))
+	// if trimTopN > len(a.bucketsList) {
+	// 	trimTopN = len(a.bucketsList)
+	// }
 	a.bucketsList = a.bucketsList[:trimTopN]
 
 	var notOther int

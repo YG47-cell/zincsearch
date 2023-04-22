@@ -25,6 +25,25 @@ import (
 	"github.com/blugelabs/bluge/search/aggregations"
 )
 
+// type Comparable interface {
+// 	int | float64 | int64
+// }
+
+// func min[T Comparable](a, b T) T {
+// 	if a < b {
+// 		return a
+// 	} else {
+// 		return b
+// 	}
+// }
+// func max[T Comparable](a, b T) T {
+// 	if a > b {
+// 		return a
+// 	} else {
+// 		return b
+// 	}
+// }
+
 type DateHistogramAggregation struct {
 	src              search.FieldSource
 	size             int
@@ -140,12 +159,14 @@ func (a *DateHistogramCalculator) Consume(d *search.DocumentMatch) {
 	a.total++
 	src := a.src.(search.DateValuesSource)
 	for _, term := range src.Dates(d) {
-		if term.UnixNano() < a.minValue {
-			a.minValue = term.UnixNano()
-		}
-		if term.UnixNano() > a.maxValue {
-			a.maxValue = term.UnixNano()
-		}
+		// if term.UnixNano() < a.minValue {
+		// 	a.minValue = term.UnixNano()
+		// }
+		a.minValue = min(a.minValue, term.UnixNano())
+		a.maxValue = max(a.maxValue, term.UnixNano())
+		// if term.UnixNano() > a.maxValue {
+		// 	a.maxValue = term.UnixNano()
+		// }
 		termStr := a.bucketKey(term.UnixNano())
 		bucket, ok := a.bucketsMap[termStr]
 		if ok {
@@ -186,14 +207,17 @@ func (a *DateHistogramCalculator) Merge(other search.Calculator) {
 func (a *DateHistogramCalculator) Finish() {
 	// re calculate min max
 	if a.extendedBounds != nil {
-		min := int64(a.extendedBounds.Min * 1e6)
-		max := int64(a.extendedBounds.Max * 1e6)
-		if a.minValue > min {
-			a.minValue = min
-		}
-		if a.maxValue < max {
-			a.maxValue = max
-		}
+		_min := int64(a.extendedBounds.Min * 1e6)
+		_max := int64(a.extendedBounds.Max * 1e6)
+
+		a.minValue = min(_min, a.minValue)
+		// if a.minValue > _min {
+		// 	a.minValue = _min
+		// }
+		a.maxValue = max(_max, a.maxValue)
+		// if a.maxValue < _max {
+		// 	a.maxValue = _max
+		// }
 	}
 	if a.hardBounds != nil {
 		a.minValue = int64(a.hardBounds.Min * 1e6)
@@ -209,13 +233,13 @@ func (a *DateHistogramCalculator) Finish() {
 				}
 				t := time.Unix(0, value).In(a.timeZone)
 				switch a.calendarInterval {
-				case "week", "1w":
+				case "week", "1W":
 					t = time.Date(t.Year(), t.Month(), t.Day()+7, 0, 0, 0, 0, t.Location())
 				case "month", "1M":
 					t = time.Date(t.Year(), t.Month()+1, t.Day(), 0, 0, 0, 0, t.Location())
-				case "quarter", "1q":
+				case "quarter", "1Q":
 					t = time.Date(t.Year(), t.Month()+3, t.Day(), 0, 0, 0, 0, t.Location())
-				case "year", "1y":
+				case "year", "1Y":
 					t = time.Date(t.Year()+1, t.Month(), t.Day(), 0, 0, 0, 0, t.Location())
 				default:
 					// noop
@@ -251,10 +275,11 @@ func (a *DateHistogramCalculator) Finish() {
 		a.sortFunc(a)
 	}
 
-	trimTopN := a.size
-	if trimTopN > len(a.bucketsList) {
-		trimTopN = len(a.bucketsList)
-	}
+	// trimTopN := a.size
+	trimTopN := min(a.size, len(a.bucketsList))
+	// if trimTopN > len(a.bucketsList) {
+	// 	trimTopN = len(a.bucketsList)
+	// }
 	a.bucketsList = a.bucketsList[:trimTopN]
 
 	var notOther int
@@ -289,11 +314,11 @@ func (a *DateHistogramCalculator) bucketKey(value int64) string {
 	if a.calendarInterval != "" {
 		t := time.Unix(0, value).In(a.timeZone)
 		switch a.calendarInterval {
-		case "week", "1w":
+		case "week", "1W":
 			t = time.Date(t.Year(), t.Month(), t.Day()-int(t.Weekday()), 0, 0, 0, 0, t.Location())
 		case "month", "1M":
 			t = time.Date(t.Year(), t.Month(), 1, 0, 0, 0, 0, t.Location())
-		case "quarter", "1q":
+		case "quarter", "1Q":
 			switch t.Month() {
 			case 1, 2, 3:
 				t = time.Date(t.Year(), 1, 1, 0, 0, 0, 0, t.Location())
@@ -304,7 +329,7 @@ func (a *DateHistogramCalculator) bucketKey(value int64) string {
 			case 10, 11, 12:
 				t = time.Date(t.Year(), 10, 1, 0, 0, 0, 0, t.Location())
 			}
-		case "year", "1y":
+		case "year", "1Y":
 			t = time.Date(t.Year(), 1, 1, 0, 0, 0, 0, t.Location())
 		default:
 			// noop

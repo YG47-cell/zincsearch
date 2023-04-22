@@ -134,12 +134,15 @@ func (a *HistogramCalculator) Consume(d *search.DocumentMatch) {
 	a.total++
 	src := a.src.(search.NumericValuesSource)
 	for _, term := range src.Numbers(d) {
-		if term < a.minValue {
-			a.minValue = term
-		}
-		if term > a.maxValue {
-			a.maxValue = term
-		}
+
+		a.minValue = min(a.minValue, term)
+		// if term < a.minValue {
+		// 	a.minValue = term
+		// }
+		a.maxValue = max(a.maxValue, term)
+		// if term > a.maxValue {
+		// 	a.maxValue = term
+		// }
 		termStr := a.bucketKey(term)
 		bucket, ok := a.bucketsMap[termStr]
 		if ok {
@@ -180,12 +183,14 @@ func (a *HistogramCalculator) Merge(other search.Calculator) {
 func (a *HistogramCalculator) Finish() {
 	// re calculate min max
 	if a.extendedBounds != nil {
-		if a.minValue > a.extendedBounds.Min {
-			a.minValue = a.extendedBounds.Min
-		}
-		if a.maxValue < a.extendedBounds.Max {
-			a.maxValue = a.extendedBounds.Max
-		}
+		a.minValue = min(a.minValue, a.extendedBounds.Min)
+		// if a.minValue > a.extendedBounds.Min {
+		// 	a.minValue = a.extendedBounds.Min
+		// }
+		a.maxValue = max(a.maxValue, a.extendedBounds.Max)
+		// if a.maxValue < a.extendedBounds.Max {
+		// 	a.maxValue = a.extendedBounds.Max
+		// }
 	}
 	if a.hardBounds != nil {
 		a.minValue = a.hardBounds.Min
@@ -220,10 +225,11 @@ func (a *HistogramCalculator) Finish() {
 		a.sortFunc(a)
 	}
 
-	trimTopN := a.size
-	if trimTopN > len(a.bucketsList) {
-		trimTopN = len(a.bucketsList)
-	}
+	// trimTopN := a.size
+	trimTopN := min(a.size, len(a.bucketsList))
+	// if trimTopN > len(a.bucketsList) {
+	// 	trimTopN = len(a.bucketsList)
+	// }
 	a.bucketsList = a.bucketsList[:trimTopN]
 
 	var notOther int

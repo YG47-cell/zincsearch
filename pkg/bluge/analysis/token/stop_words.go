@@ -44,12 +44,11 @@ import (
 	"github.com/blugelabs/bluge/analysis/lang/ru"
 	"github.com/blugelabs/bluge/analysis/lang/sv"
 	"github.com/blugelabs/bluge/analysis/lang/tr"
-
-	"github.com/zinclabs/zincsearch/pkg/bluge/analysis/lang/bn"
-	"github.com/zinclabs/zincsearch/pkg/bluge/analysis/lang/br"
-	"github.com/zinclabs/zincsearch/pkg/bluge/analysis/lang/et"
-	"github.com/zinclabs/zincsearch/pkg/bluge/analysis/lang/lv"
-	"github.com/zinclabs/zincsearch/pkg/bluge/analysis/lang/th"
+	// "github.com/zinclabs/zincsearch/pkg/bluge/analysis/lang/bn"
+	// "github.com/zinclabs/zincsearch/pkg/bluge/analysis/lang/br"
+	// "github.com/zinclabs/zincsearch/pkg/bluge/analysis/lang/et"
+	// "github.com/zinclabs/zincsearch/pkg/bluge/analysis/lang/lv"
+	// "github.com/zinclabs/zincsearch/pkg/bluge/analysis/lang/th"
 )
 
 func StopWords(stopwords []string) analysis.TokenMap {
@@ -74,10 +73,10 @@ func loadLanguageStopWords(rv *analysis.TokenMap, language string) bool {
 		dict = ar.StopWords()
 	case "_bg_", "_bulgarian_":
 		dict = bg.StopWords()
-	case "_bn_", "_bengali_":
-		dict = bn.StopWords()
-	case "_br_", "_brazilian_": // _brazilian_ (Brazilian Portuguese)
-		dict = br.StopWords()
+	// case "_bn_", "_bengali_":
+	// 	dict = bn.StopWords()
+	// case "_br_", "_brazilian_": // _brazilian_ (Brazilian Portuguese)
+	// 	dict = br.StopWords()
 	case "_ca_", "catalan_":
 		dict = ca.StopWords()
 	case "_cjk_": // _cjk_ (Chinese, Japanese, and Korean)
@@ -96,8 +95,8 @@ func loadLanguageStopWords(rv *analysis.TokenMap, language string) bool {
 		dict = en.StopWords()
 	case "_es_", "_spanish_":
 		dict = es.StopWords()
-	case "_et_", "_estonian_":
-		dict = et.StopWords()
+	// case "_et_", "_estonian_":
+	// 	dict = et.StopWords()
 	case "_eu_", "_basque_":
 		dict = eu.StopWords()
 	case "_fa_", "_persian_":
@@ -120,8 +119,8 @@ func loadLanguageStopWords(rv *analysis.TokenMap, language string) bool {
 		dict = id.StopWords()
 	case "_it_", "_italian_":
 		dict = it.StopWords()
-	case "_lv", "_latvian_":
-		dict = lv.StopWords()
+	// case "_lv", "_latvian_":
+	// 	dict = lv.StopWords()
 	case "_nl_", "_dutch_":
 		dict = nl.StopWords()
 	case "_no_", "_norwegian_":
@@ -136,8 +135,8 @@ func loadLanguageStopWords(rv *analysis.TokenMap, language string) bool {
 		dict = sv.StopWords()
 	case "_tr_", "_turkish_":
 		dict = tr.StopWords()
-	case "_th_", "_thai_":
-		dict = th.StopWords()
+	// case "_th_", "_thai_":
+	// 	dict = th.StopWords()
 	default:
 		return false
 	}

@@ -39,6 +39,10 @@ func ParseDuration(s string) (time.Duration, error) {
 	return time.Duration(dv), err
 }
 
+// func JudgeYear(Hours float64) bool {
+
+//		return true
+//	}
 func FormatDuration(d time.Duration) string {
 	var s string
 	if d.Hours() >= 24*30*12 {
